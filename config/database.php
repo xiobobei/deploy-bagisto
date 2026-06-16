@@ -52,6 +52,9 @@ return [
             'prefix' => env('DB_PREFIX', ''),
             'strict' => false,
             'engine' => 'InnoDB ROW_FORMAT=DYNAMIC',
+            'options' => [
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+            ],
         ],
 
         'pgsql' => [
