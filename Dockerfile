@@ -29,7 +29,7 @@ RUN cp .env.example .env 2>/dev/null || true
 RUN chmod -R 777 storage bootstrap/cache
 
 # Expose port
-EXPOSE $PORT
+EXPOSE 8080
 
 # Start command - import database and serve
 CMD mysql -h $DB_HOST -P $DB_PORT -u $DB_USERNAME -p$DB_PASSWORD $DB_DATABASE < /app/database.sql && \
@@ -37,4 +37,4 @@ CMD mysql -h $DB_HOST -P $DB_PORT -u $DB_USERNAME -p$DB_PASSWORD $DB_DATABASE < 
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache && \
-    php artisan serve --host=0.0.0.0 --port=$PORT
+    php artisan serve --host=0.0.0.0 --port=8080
