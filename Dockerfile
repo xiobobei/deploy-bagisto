@@ -4,7 +4,7 @@ FROM php:8.1-cli
 RUN apt-get update && apt-get install -y \
     git curl libpng-dev libonig-dev libxml2-dev \
     libzip-dev libicu-dev libfreetype6-dev libjpeg62-turbo-dev \
-    zip unzip
+    zip unzip default-mysql-client
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
@@ -31,9 +31,8 @@ RUN chmod -R 777 storage bootstrap/cache
 # Expose port
 EXPOSE $PORT
 
-# Start command - run migrations and serve
-CMD php artisan migrate --force && \
-    php artisan db:seed --force && \
+# Start command - import database and serve
+CMD mysql -h $DB_HOST -P $DB_PORT -u $DB_USERNAME -p$DB_PASSWORD $DB_DATABASE < /app/database.sql && \
     php artisan key:generate --force && \
     php artisan config:cache && \
     php artisan route:cache && \
