@@ -25,7 +25,8 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --ignore-platfo
 # Copy everything
 COPY . .
 
-# Generate key and cache config
+# Create .env and generate key
+RUN cp .env.example .env 2>/dev/null || true
 RUN php artisan key:generate --force
 RUN php artisan config:cache
 RUN php artisan route:cache
