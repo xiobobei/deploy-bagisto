@@ -1,0 +1,15 @@
+<?php
+
+namespace BagistoPlus\Visual\Settings\Support;
+
+class IconTransformer
+{
+    public function __invoke(?string $icon = null, array $schema = [])
+    {
+        if (! $icon) {
+            return null;
+        }
+
+        return new IconValue($icon);
+    }
+}

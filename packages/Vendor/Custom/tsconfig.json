@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "importHelpers": true,
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": false,
+    "jsx": "preserve",
+    "allowJs": true,
+    "types": ["node", "vite/client", "unplugin-vue-macros/macros-global", "unplugin-icons/types/vue"]
+  },
+  "vueCompilerOptions": {
+    "target": 3
+  },
+  "include": ["resources/assets/editor/**/*", "resources/assets/admin/ts/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts", "public"]
+}
