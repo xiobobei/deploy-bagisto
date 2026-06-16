@@ -4,7 +4,7 @@ FROM php:8.1-cli
 RUN apt-get update && apt-get install -y \
     git curl libpng-dev libonig-dev libxml2-dev \
     libzip-dev libicu-dev libfreetype6-dev libjpeg62-turbo-dev \
-    zip unzip nodejs npm
+    zip unzip
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
@@ -16,24 +16,26 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /app
 
-# Copy composer files first for better caching
-COPY composer.json composer.lock ./
-
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs
-
 # Copy everything
 COPY . .
 
-# Create .env and generate key
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+
+# Copy .env if not exists
 RUN cp .env.example .env 2>/dev/null || true
-RUN php artisan key:generate --force
-RUN php artisan config:cache
-RUN php artisan route:cache
-RUN php artisan view:cache
+
+# Set permissions
+RUN chmod -R 777 storage bootstrap/cache
 
 # Expose port
 EXPOSE $PORT
 
-# Start command
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+# Start command - run migrations and serve
+CMD php artisan migrate --force && \
+    php artisan db:seed --force && \
+    php artisan key:generate --force && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
+    php artisan serve --host=0.0.0.0 --port=$PORT
