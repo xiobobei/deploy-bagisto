@@ -5,7 +5,17 @@ if [ ! -f /app/.env ]; then
     cp /app/.env.example /app/.env
 fi
 
-# Update .env with database variables
+# Parse DATABASE_URL if set
+if [ ! -z "$DATABASE_URL" ]; then
+    # Parse: mysql://user:pass@host:port/database
+    DB_USERNAME=$(echo $DATABASE_URL | sed -n 's|.*://\([^:]*\):.*|\1|p')
+    DB_PASSWORD=$(echo $DATABASE_URL | sed -n 's|.*://[^:]*:\([^@]*\)@.*|\1|p')
+    DB_HOST=$(echo $DATABASE_URL | sed -n 's|.*@\([^:]*\):.*|\1|p')
+    DB_PORT=$(echo $DATABASE_URL | sed -n 's|.*:\([0-9]*\)/.*|\1|p')
+    DB_DATABASE=$(echo $DATABASE_URL | sed -n 's|.*/\([^?]*\).*|\1|p')
+fi
+
+# Update .env
 sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=mysql/" /app/.env
 sed -i "s/DB_HOST=.*/DB_HOST=$DB_HOST/" /app/.env
 sed -i "s/DB_PORT=.*/DB_PORT=$DB_PORT/" /app/.env
@@ -15,6 +25,8 @@ sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" /app/.env
 sed -i "s/APP_ENV=.*/APP_ENV=production/" /app/.env
 sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" /app/.env
 
+echo "DB: $DB_HOST:$DB_PORT/$DB_DATABASE"
+
 # Generate key
 php artisan key:generate --force
 
@@ -22,14 +34,15 @@ php artisan key:generate --force
 echo "Waiting for database..."
 sleep 15
 
-# Import database with SSL disabled
+# Import database - try without SSL options
 echo "Importing database..."
 if [ -f /app/database.sql ]; then
-    mysql --ssl-mode=DISABLED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$DB_DATABASE" < /app/database.sql 2>&1 || \
-    mysql -h "thomas.proxy.rlwy.net" -P "39051" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$DB_DATABASE" < /app/database.sql 2>&1 || \
-    echo "Database import failed, continuing anyway..."
-else
-    echo "No database.sql found, skipping import"
+    mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$DB_DATABASE" < /app/database.sql 2>&1
+    if [ $? -eq 0 ]; then
+        echo "Database imported successfully!"
+    else
+        echo "Database import failed, continuing anyway..."
+    fi
 fi
 
 # Cache config
