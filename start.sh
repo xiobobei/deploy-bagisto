@@ -33,9 +33,11 @@ fi
 echo "Generating APP_KEY..."
 # Remove existing key first
 sed -i '/^APP_KEY=/d' /var/www/html/.env
-# Generate new key and add to .env
-php artisan key:generate --force --show 2>&1 | tail -1 | sed 's/^/APP_KEY=/' >> /var/www/html/.env
-echo "APP_KEY set successfully"
+# Generate new key using artisan and capture it
+NEW_KEY=$(php artisan key:generate --show 2>&1)
+# Add key to .env
+echo "APP_KEY=$NEW_KEY" >> /var/www/html/.env
+echo "APP_KEY set to: $NEW_KEY"
 
 # Run migrations
 echo "Running migrations..."
