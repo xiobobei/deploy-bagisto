@@ -36,13 +36,18 @@ rm -rf /var/www/html/storage/framework/cache/*
 rm -rf /var/www/html/storage/framework/sessions/*
 rm -rf /var/www/html/storage/framework/views/*
 
-# Generate APP_KEY using PHP directly (most reliable)
-echo "Generating APP_KEY..."
-php -r "echo 'APP_KEY=base64:' . base64_encode(random_bytes(32)) . PHP_EOL;" > /tmp/new_key.txt
-sed -i '/^APP_KEY=/d' /var/www/html/.env
-cat /tmp/new_key.txt >> /var/www/html/.env
-rm /tmp/new_key.txt
-echo "APP_KEY generated"
+# APP_KEY - use Railway variable or generate if not set
+if [ -n "$APP_KEY" ]; then
+    echo "Using APP_KEY from Railway variable..."
+    sed -i '/^APP_KEY=/d' /var/www/html/.env
+    echo "APP_KEY=$APP_KEY" >> /var/www/html/.env
+else
+    echo "No APP_KEY set! Generating..."
+    NEW_KEY=$(php artisan key:generate --show)
+    sed -i '/^APP_KEY=/d' /var/www/html/.env
+    echo "APP_KEY=$NEW_KEY" >> /var/www/html/.env
+fi
+echo "APP_KEY configured"
 
 # Run migrations
 echo "Running migrations..."
