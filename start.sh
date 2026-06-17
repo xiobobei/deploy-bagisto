@@ -29,9 +29,13 @@ if [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
     sed -i "s|APP_URL=.*|APP_URL=https://$RAILWAY_PUBLIC_DOMAIN|" /var/www/html/.env
 fi
 
-# Generate key
+# Generate key - ensure it's in the correct format
 echo "Generating APP_KEY..."
-php artisan key:generate --force 2>&1 || echo "Key generation failed (might already exist)"
+# Remove existing key first
+sed -i '/^APP_KEY=/d' /var/www/html/.env
+# Generate new key and add to .env
+php artisan key:generate --force --show 2>&1 | tail -1 | sed 's/^/APP_KEY=/' >> /var/www/html/.env
+echo "APP_KEY set successfully"
 
 # Run migrations
 echo "Running migrations..."
