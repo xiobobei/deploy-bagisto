@@ -68,6 +68,14 @@ mkdir -p /var/www/html/storage/framework/sessions
 mkdir -p /var/www/html/storage/framework/views
 mkdir -p /var/www/html/storage/logs
 
+# Create storage symlink for public assets
+echo "Creating storage symlink..."
+php artisan storage:link --force 2>&1 || true
+
+# Publish vendor assets
+echo "Publishing assets..."
+php artisan vendor:publish --all --force 2>&1 || true
+
 # Set permissions
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
