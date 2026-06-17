@@ -22,7 +22,7 @@ fi
 
 # Set production environment
 sed -i "s/APP_ENV=.*/APP_ENV=production/" /var/www/html/.env
-sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" /var/www/html/.env
+sed -i "s/APP_DEBUG=.*/APP_DEBUG=true/" /var/www/html/.env
 
 # Set APP_URL
 if [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
