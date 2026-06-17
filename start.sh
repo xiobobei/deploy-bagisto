@@ -59,6 +59,15 @@ php artisan config:cache 2>&1 || echo "Config cache failed"
 php artisan route:cache 2>&1 || echo "Route cache failed"
 php artisan view:cache 2>&1 || echo "View cache failed"
 
+# Create required storage directories
+echo "Creating storage directories..."
+mkdir -p /var/www/html/storage/app/db-blade-compiler/views
+mkdir -p /var/www/html/storage/app/public
+mkdir -p /var/www/html/storage/framework/cache
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
+mkdir -p /var/www/html/storage/logs
+
 # Set permissions
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
