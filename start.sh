@@ -49,17 +49,14 @@ else
 fi
 echo "APP_KEY configured"
 
-# Import database.sql if it exists and database is empty
+# Import database.sql (force fresh import)
 echo "Checking for database.sql..."
 if [ -f /var/www/html/database.sql ]; then
-    TABLE_COUNT=$(mysql -h"$MYSQLHOST" -P"${MYSQLPORT:-3306}" -u"$MYSQLUSER" -p"$MYSQLPASSWORD" "$MYSQLDATABASE" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$MYSQLDATABASE'" -sN 2>/dev/null || echo "0")
-    if [ "$TABLE_COUNT" -eq "0" ]; then
-        echo "Importing database.sql..."
-        mysql -h"$MYSQLHOST" -P"${MYSQLPORT:-3306}" -u"$MYSQLUSER" -p"$MYSQLPASSWORD" "$MYSQLDATABASE" < /var/www/html/database.sql 2>&1 || echo "Database import failed"
-        echo "Database imported"
-    else
-        echo "Database already has tables, skipping import"
-    fi
+    echo "Dropping all tables for fresh import..."
+    mysql -h"$MYSQLHOST" -P"${MYSQLPORT:-3306}" -u"$MYSQLUSER" -p"$MYSQLPASSWORD" "$MYSQLDATABASE" -e "SET FOREIGN_KEY_CHECKS=0; DROP DATABASE $MYSQLDATABASE; CREATE DATABASE $MYSQLDATABASE; SET FOREIGN_KEY_CHECKS=1;" 2>/dev/null || true
+    echo "Importing database.sql..."
+    mysql -h"$MYSQLHOST" -P"${MYSQLPORT:-3306}" -u"$MYSQLUSER" -p"$MYSQLPASSWORD" "$MYSQLDATABASE" < /var/www/html/database.sql 2>&1 || echo "Database import failed"
+    echo "Database imported successfully"
 fi
 
 # Run migrations
