@@ -39,11 +39,17 @@ NEW_KEY=$(head -c 32 /dev/urandom | base64 | head -c 32)
 echo "APP_KEY=base64:$NEW_KEY" >> /var/www/html/.env
 echo "APP_KEY set successfully"
 
+# Clear ALL caches first
+echo "Clearing old caches..."
+php artisan config:clear 2>&1 || true
+php artisan route:clear 2>&1 || true
+php artisan view:clear 2>&1 || true
+
 # Run migrations
 echo "Running migrations..."
 php artisan migrate --force 2>&1 || echo "Migrations failed"
 
-# Cache config
+# Cache config AFTER key is set
 echo "Caching config..."
 php artisan config:cache 2>&1 || echo "Config cache failed"
 php artisan route:cache 2>&1 || echo "Route cache failed"
