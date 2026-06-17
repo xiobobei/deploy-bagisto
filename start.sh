@@ -49,6 +49,19 @@ else
 fi
 echo "APP_KEY configured"
 
+# Import database.sql if it exists and database is empty
+echo "Checking for database.sql..."
+if [ -f /var/www/html/database.sql ]; then
+    TABLE_COUNT=$(mysql -h"$MYSQLHOST" -P"${MYSQLPORT:-3306}" -u"$MYSQLUSER" -p"$MYSQLPASSWORD" "$MYSQLDATABASE" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$MYSQLDATABASE'" -sN 2>/dev/null || echo "0")
+    if [ "$TABLE_COUNT" -eq "0" ]; then
+        echo "Importing database.sql..."
+        mysql -h"$MYSQLHOST" -P"${MYSQLPORT:-3306}" -u"$MYSQLUSER" -p"$MYSQLPASSWORD" "$MYSQLDATABASE" < /var/www/html/database.sql 2>&1 || echo "Database import failed"
+        echo "Database imported"
+    else
+        echo "Database already has tables, skipping import"
+    fi
+fi
+
 # Run migrations
 echo "Running migrations..."
 php artisan migrate --force 2>&1 || echo "Migrations failed"
