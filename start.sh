@@ -20,30 +20,29 @@ if [ -n "$MYSQLHOST" ]; then
     sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$MYSQLPASSWORD/" /var/www/html/.env
 fi
 
-# Set production environment (debug ON for troubleshooting)
+# Set production environment
 sed -i "s/APP_ENV=.*/APP_ENV=production/" /var/www/html/.env
-sed -i "s/APP_DEBUG=.*/APP_DEBUG=true/" /var/www/html/.env
+sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" /var/www/html/.env
 
 # Set APP_URL
 if [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
     sed -i "s|APP_URL=.*|APP_URL=https://$RAILWAY_PUBLIC_DOMAIN|" /var/www/html/.env
 fi
 
-# Generate key - ensure it's in the correct format
-echo "Generating APP_KEY..."
-# Remove existing key first
-sed -i '/^APP_KEY=/d' /var/www/html/.env
-# Generate key directly with proper format
-NEW_KEY=$(head -c 32 /dev/urandom | base64 | head -c 32)
-# Add key to .env in base64 format
-echo "APP_KEY=base64:$NEW_KEY" >> /var/www/html/.env
-echo "APP_KEY set successfully"
+# Remove ALL cache files first
+echo "Clearing all caches..."
+rm -rf /var/www/html/bootstrap/cache/*.php
+rm -rf /var/www/html/storage/framework/cache/*
+rm -rf /var/www/html/storage/framework/sessions/*
+rm -rf /var/www/html/storage/framework/views/*
 
-# Clear ALL caches first
-echo "Clearing old caches..."
-php artisan config:clear 2>&1 || true
-php artisan route:clear 2>&1 || true
-php artisan view:clear 2>&1 || true
+# Generate APP_KEY using PHP directly (most reliable)
+echo "Generating APP_KEY..."
+php -r "echo 'APP_KEY=base64:' . base64_encode(random_bytes(32)) . PHP_EOL;" > /tmp/new_key.txt
+sed -i '/^APP_KEY=/d' /var/www/html/.env
+cat /tmp/new_key.txt >> /var/www/html/.env
+rm /tmp/new_key.txt
+echo "APP_KEY generated"
 
 # Run migrations
 echo "Running migrations..."
