@@ -13,7 +13,7 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd intl zip opca
 
 # Enable Apache mod_rewrite and fix MPM conflict
 RUN a2enmod rewrite \
-    && a2dismod mpm_event \
+    && rm -f /etc/apache2/mods-enabled/mpm_event.* \
     && a2enmod mpm_prefork
 
 # Install Composer

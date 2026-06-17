@@ -47,6 +47,10 @@ php artisan view:cache 2>&1 || echo "View cache failed"
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
 
+# Fix MPM conflict - ensure only one MPM is loaded
+rm -f /etc/apache2/mods-enabled/mpm_event.*
+a2enmod mpm_prefork 2>/dev/null || true
+
 # Update Apache to listen on correct port
 PORT=${PORT:-8080}
 sed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf
